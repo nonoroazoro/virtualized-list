@@ -23,7 +23,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
     /**
      * Gets the HTML element wrapped by the component.
      */
-    public readonly element: HTMLElement;
+    public readonly container: HTMLElement;
 
     /**
      * Gets the unique identifier of the component.
@@ -38,7 +38,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public get parent()
     {
-        return this.element.parentElement;
+        return this.container.parentElement;
     }
 
     /**
@@ -58,18 +58,18 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
 
         if (isString(element))
         {
-            this.element = this.createElement(element);
+            this.container = this.createElement(element);
         }
         else
         {
-            this.element = element;
+            this.container = element;
         }
 
         this._options = options ?? {};
         const { className } = this._options;
         if (className != null)
         {
-            this.element.className = className;
+            this.container.className = className;
         }
     }
 
@@ -96,9 +96,9 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public appendChild(element: HTMLComponent | HTMLElement)
     {
-        this.element.appendChild(
+        this.container.appendChild(
             element instanceof HTMLComponent
-                ? element.element
+                ? element.container
                 : element
         );
     }
@@ -110,7 +110,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public appendTo(element: DocumentFragment | HTMLComponent | HTMLElement)
     {
-        (element instanceof HTMLComponent ? element.element : element).appendChild(this.element);
+        (element instanceof HTMLComponent ? element.container : element).appendChild(this.container);
         this._isAppended = true;
     }
 
@@ -119,7 +119,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public remove()
     {
-        this.element.remove();
+        this.container.remove();
         this._isAppended = false;
     }
 
@@ -130,7 +130,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public setClassName(className: string)
     {
-        this.element.className = cs(this._options.className, className);
+        this.container.className = cs(this._options.className, className);
     }
 
     /**
@@ -140,7 +140,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public addClassNames(...classNames: string[])
     {
-        this.element.classList.add(...classNames);
+        this.container.classList.add(...classNames);
     }
 
     /**
@@ -150,7 +150,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public removeClassNames(...classNames: string[])
     {
-        this.element.classList.remove(...classNames);
+        this.container.classList.remove(...classNames);
     }
 
     /**
@@ -169,7 +169,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public toggleClassName(className: string, force?: boolean)
     {
-        return this.element.classList.toggle(className, force);
+        return this.container.classList.toggle(className, force);
     }
 
     public dispose()
