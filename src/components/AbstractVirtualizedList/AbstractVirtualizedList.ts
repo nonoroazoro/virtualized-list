@@ -58,7 +58,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private set paddingTop(value: number)
     {
         this._paddingTop = value;
-        this._listItemsContainer.style.paddingTop = `${value}px`;
+        this._itemsContainer.style.paddingTop = `${value}px`;
     }
 
     private _paddingBottom = 0;
@@ -70,7 +70,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private set paddingBottom(value: number)
     {
         this._paddingBottom = value;
-        this._listItemsContainer.style.paddingBottom = `${value}px`;
+        this._itemsContainer.style.paddingBottom = `${value}px`;
     }
 
     /**
@@ -105,13 +105,13 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         return this._scrollableContainer;
     }
 
-    private _listItemsContainer: HTMLDivElement;
+    private _itemsContainer: HTMLDivElement;
     /**
-     * Gets the list items container element.
+     * Gets the items container element.
      */
-    public get listItemsContainer(): HTMLDivElement
+    public get itemsContainer(): HTMLDivElement
     {
-        return this._listItemsContainer;
+        return this._itemsContainer;
     }
 
     /**
@@ -243,11 +243,11 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         // Create scrollable container.
         this._scrollableContainer = this.createElement("div", styles.scrollableContainer);
 
-        // Create list items container.
-        this._listItemsContainer = this.createElement("div");
+        // Create items container.
+        this._itemsContainer = this.createElement("div", styles.itemsContainer);
 
         // Commit.
-        this._scrollableContainer.appendChild(this._listItemsContainer);
+        this._scrollableContainer.appendChild(this._itemsContainer);
         this.appendChild(this._scrollableContainer);
 
         // Init ItemDataManager.
@@ -275,7 +275,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     private _clear()
     {
-        this._removeItemElements(this.listItemsContainer.children);
+        this._removeItemElements(this._itemsContainer.children);
     }
 
     /**
@@ -382,21 +382,21 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
         // Calculates the offset render range.
         const offsetRenderRange = offsetRange(this._renderRange, scrollTop);
-        if (this._listItemsContainer.childElementCount > 0)
+        if (this._itemsContainer.childElementCount > 0)
         {
             const [renderRangeTop, renderRangeBottom] = offsetRenderRange;
 
             // 1. Calculates items that should be preprened.
             prependedItems = calculatePrependedItems(
                 offsetRenderRange,
-                this._listItemsContainer.firstElementChild as HTMLElement,
+                this._itemsContainer.firstElementChild as HTMLElement,
                 this._itemDataManager
             );
 
             // 2. Calculates items that should be appended.
             appendedItems = calculateAppendedItems(
                 offsetRenderRange,
-                this._listItemsContainer.lastElementChild as HTMLElement,
+                this._itemsContainer.lastElementChild as HTMLElement,
                 this._itemDataManager
             );
 
@@ -404,14 +404,14 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
             if (prependedItems.length === 0)
             {
                 // Bypassed if scroll up or we are about to prepend items.
-                leadingRemoved = calculateLeadingRemovedElements(renderRangeTop, this._listItemsContainer);
+                leadingRemoved = calculateLeadingRemovedElements(renderRangeTop, this._itemsContainer);
             }
 
             // 4. Calculates items that should be removed from the trailing side of the list.
             if (appendedItems.length === 0)
             {
                 // Bypassed if scroll down or we are about to append items.
-                trailingRemoved = calculateTrailingRemovedElements(renderRangeBottom, this._listItemsContainer);
+                trailingRemoved = calculateTrailingRemovedElements(renderRangeBottom, this._itemsContainer);
             }
         }
         else
@@ -430,8 +430,8 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this._removeItemElements(trailingRemoved);
 
         // 6. Render items.
-        this._listItemsContainer.append(...appendedItems.map(itemData => this._createItemElement(itemData)));
-        this._listItemsContainer.prepend(...prependedItems.map(itemData => this._createItemElement(itemData)));
+        this._itemsContainer.append(...appendedItems.map(itemData => this._createItemElement(itemData)));
+        this._itemsContainer.prepend(...prependedItems.map(itemData => this._createItemElement(itemData)));
 
         // 7. Update paddings to make up scrollHeight.
         this._updatePaddings();
@@ -439,7 +439,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     private _updatePaddings()
     {
-        const nextRenderedIndexRange = calculateRenderedIndexRange(this._listItemsContainer);
+        const nextRenderedIndexRange = calculateRenderedIndexRange(this._itemsContainer);
         if (nextRenderedIndexRange == null)
         {
             log("=== update paddings: clear ===");
