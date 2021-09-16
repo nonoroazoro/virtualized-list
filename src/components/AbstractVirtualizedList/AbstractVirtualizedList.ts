@@ -27,6 +27,7 @@ import type { ItemData, RenderedIndexRange, RenderRange } from "../../types";
 import type { ResizeTrackerEntry, ScrollTrackerEntry } from "../../trackers";
 import type { ScrollOptionsSupported } from "../../scroll";
 import type { VirtualizedListConfig } from "./VirtualizedListConfig";
+import type { VirtualizedListEventTypes } from "./VirtualizedListEventTypes";
 import type { VirtualizedListOptions } from "./VirtualizedListOptions";
 
 import * as styles from "./AbstractVirtualizedList.less";
@@ -34,7 +35,7 @@ import * as styles from "./AbstractVirtualizedList.less";
 /**
  * Abstract virtualized list component.
  */
-export abstract class AbstractVirtualizedList<DataType, EventTypes extends ValidEventTypes = string | symbol> extends HTMLComponent<EventTypes>
+export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<VirtualizedListEventTypes>
 {
     protected override _options: VirtualizedListConfig;
 
@@ -254,7 +255,11 @@ export abstract class AbstractVirtualizedList<DataType, EventTypes extends Valid
         this._itemDataManager = new ItemDataManager(this);
 
         // Init ScrollTracker.
-        this._scrollTracker = new ScrollTracker(this._scrollableContainer, this._handleScroll);
+        this._scrollTracker = new ScrollTracker(this._scrollableContainer);
+        this._scrollTracker.on("scroll", this._handleScroll);
+        this._scrollTracker.on("scrollChange", this._handleScrollingChange);
+        this._scrollTracker.on("topReached", this._handleTopReached);
+        this._scrollTracker.on("bottomReached", this._handleBottomReached);
         this._scrollTracker.observe();
 
         // Init ScrollableResizeTracker.
@@ -333,9 +338,26 @@ export abstract class AbstractVirtualizedList<DataType, EventTypes extends Valid
 
     private _handleScroll = (entry: ScrollTrackerEntry) =>
     {
+        this.emit("scroll", entry);
+
         // Reconcile items while scrolling.
         log("=== reconcile: Scroll");
         this._reconcileItems(entry.scrollTop);
+    };
+
+    private _handleScrollingChange = (isScrolling: boolean) =>
+    {
+        this.emit("scrollChange", isScrolling);
+    };
+
+    private _handleTopReached = () =>
+    {
+        this.emit("topReached");
+    };
+
+    private _handleBottomReached = () =>
+    {
+        this.emit("bottomReached");
     };
 
     private _handleScrollComplete = () =>

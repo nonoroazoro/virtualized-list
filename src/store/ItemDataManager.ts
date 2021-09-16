@@ -12,7 +12,7 @@ export class ItemDataManager<DataType> implements IDisposable
      * Note: This is a sparse array, so be careful.
      */
     private _data: Array<ItemData<DataType>> = [];
-    private _list: AbstractVirtualizedList<DataType, any>;
+    private _list: AbstractVirtualizedList<DataType>;
 
     private _dataSource: DataType[] = [];
 
@@ -35,9 +35,9 @@ export class ItemDataManager<DataType> implements IDisposable
     /**
      * Creates an instance of {@link ItemDataManager}.
      *
-     * @param {AbstractVirtualizedList<DataType, any>} list The virtualized list.
+     * @param {AbstractVirtualizedList<DataType>} list The virtualized list.
      */
-    constructor(list: AbstractVirtualizedList<DataType, any>)
+    constructor(list: AbstractVirtualizedList<DataType>)
     {
         this._list = list;
     }
