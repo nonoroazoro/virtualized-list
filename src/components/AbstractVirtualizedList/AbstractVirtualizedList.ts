@@ -1,5 +1,4 @@
 import cs from "classnames";
-import type { ValidEventTypes } from "eventemitter3";
 
 import
 {
