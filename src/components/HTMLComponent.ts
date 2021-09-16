@@ -20,17 +20,14 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     protected _isAppended = false;
 
+    protected _container: HTMLElement;
+
     /**
      * Gets the HTML element wrapped by the component.
      */
-    public readonly container: HTMLElement;
-
-    /**
-     * Gets the unique identifier of the component.
-     */
-    public get key()
+    public get container()
     {
-        return this._options.key;
+        return this._container;
     }
 
     /**
@@ -38,7 +35,15 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public get parent()
     {
-        return this.container.parentElement;
+        return this._container.parentElement;
+    }
+
+    /**
+     * Gets the unique identifier of the component.
+     */
+    public get key()
+    {
+        return this._options.key;
     }
 
     /**
@@ -58,18 +63,18 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
 
         if (isString(element))
         {
-            this.container = this.createElement(element);
+            this._container = this.createElement(element);
         }
         else
         {
-            this.container = element;
+            this._container = element;
         }
 
         this._options = options ?? {};
         const { className } = this._options;
         if (className != null)
         {
-            this.container.className = className;
+            this._container.className = className;
         }
     }
 
@@ -96,7 +101,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public appendChild(element: HTMLComponent | HTMLElement)
     {
-        this.container.appendChild(
+        this._container.appendChild(
             element instanceof HTMLComponent
                 ? element.container
                 : element
@@ -110,7 +115,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public appendTo(element: DocumentFragment | HTMLComponent | HTMLElement)
     {
-        (element instanceof HTMLComponent ? element.container : element).appendChild(this.container);
+        (element instanceof HTMLComponent ? element.container : element).appendChild(this._container);
         this._isAppended = true;
     }
 
@@ -119,7 +124,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public remove()
     {
-        this.container.remove();
+        this._container.remove();
         this._isAppended = false;
     }
 
@@ -130,7 +135,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public setClassName(className: string)
     {
-        this.container.className = cs(this._options.className, className);
+        this._container.className = cs(this._options.className, className);
     }
 
     /**
@@ -140,7 +145,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public addClassNames(...classNames: string[])
     {
-        this.container.classList.add(...classNames);
+        this._container.classList.add(...classNames);
     }
 
     /**
@@ -150,7 +155,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public removeClassNames(...classNames: string[])
     {
-        this.container.classList.remove(...classNames);
+        this._container.classList.remove(...classNames);
     }
 
     /**
@@ -169,7 +174,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
      */
     public toggleClassName(className: string, force?: boolean)
     {
-        return this.container.classList.toggle(className, force);
+        return this._container.classList.toggle(className, force);
     }
 
     public dispose()
