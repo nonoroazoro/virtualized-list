@@ -11,7 +11,7 @@ export interface ScrollTrackerEntry
     target: Element;
 
     /**
-     * The `vertical` position of the scrollbar.
+     * The `vertical` scroll position.
      */
     scrollTop: number;
 
