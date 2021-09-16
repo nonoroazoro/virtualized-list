@@ -1,15 +1,16 @@
-import { debounce, isFunction } from "../../utils";
+import { EventEmitter } from "eventemitter3";
+
+import { debounce } from "../../utils";
 import { ScrollDirection } from "./ScrollDirection";
 import type { IDisposable } from "../../IDisposable";
-import type { ScrollTrackerHandler } from "./ScrollTrackerHandler";
+import type { ScrollTrackerEventTypes } from "./ScrollTrackerEventTypes";
 
 /**
  * Provides a way to track the changes to the scrollbar position of a DOM element.
  */
-export class ScrollTracker implements IDisposable
+export class ScrollTracker extends EventEmitter<ScrollTrackerEventTypes> implements IDisposable
 {
     private _element: HTMLElement | undefined;
-    private _onScrolled: ScrollTrackerHandler;
 
     private _isObserving = false;
     private _lastScrollTop = 0;
@@ -34,15 +35,13 @@ export class ScrollTracker implements IDisposable
 
     /**
      * Creates an instance of `ScrollTracker`.
+     *
+     * @param {HTMLElement} element The DOM element to track.
      */
-    constructor(element: HTMLElement, onScrolled: ScrollTrackerHandler)
+    constructor(element: HTMLElement)
     {
-        if (!isFunction(onScrolled))
-        {
-            throw new TypeError(`ScrollTracker: parameter 'onScrolled' must be a function`);
-        }
+        super();
         this._element = element;
-        this._onScrolled = onScrolled;
         this._detectScrollEnd = debounce(this._detectScrollEnd, 100);
     }
 
@@ -76,6 +75,7 @@ export class ScrollTracker implements IDisposable
     public dispose()
     {
         this.stop();
+        this.removeAllListeners();
         this._element = undefined;
     }
 
@@ -86,7 +86,7 @@ export class ScrollTracker implements IDisposable
         const target = e.target as Element;
         const scrollTop = target.scrollTop;
         this._updateScrollStatus(scrollTop);
-        this._onScrolled({
+        this.emit("scroll", {
             target,
             scrollTop,
             direction: this._scrollDirection
@@ -95,11 +95,17 @@ export class ScrollTracker implements IDisposable
 
     private _updateScrollStatus(scrollTop: number)
     {
-        this._isScrolling = true;
         this._scrollDirection = scrollTop - this._lastScrollTop > 0
             ? ScrollDirection.DOWN
             : ScrollDirection.UP;
         this._lastScrollTop = scrollTop;
+
+        if (!this._isScrolling)
+        {
+            this._isScrolling = true;
+            this.emit("scrollingChange", true);
+        }
+
         this._detectScrollEnd();
     }
 
@@ -110,5 +116,6 @@ export class ScrollTracker implements IDisposable
     {
         this._isScrolling = false;
         this._scrollDirection = ScrollDirection.NONE;
+        this.emit("scrollingChange", false);
     };
 }
