@@ -257,7 +257,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         // Init ScrollTracker.
         this._scrollTracker = new ScrollTracker(this._scrollableContainer);
         this._scrollTracker.on("scroll", this._handleScroll);
-        this._scrollTracker.on("scrollChange", this._handleScrollingChange);
+        this._scrollTracker.on("scrollChange", this._handleScrollChange);
         this._scrollTracker.on("topReached", this._handleTopReached);
         this._scrollTracker.on("bottomReached", this._handleBottomReached);
         this._scrollTracker.observe();
@@ -271,10 +271,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
         // Init ScrollManager.
         this._scrollManager = new ScrollManager(this._scrollableContainer);
-        this._scrollManager.on(
-            "onComplete",
-            debounce(this._handleScrollComplete, DEFAULT_SCROLL_TO_CONFIG.duration + 50)
-        );
+        this._handleScrollEnd = debounce(this._handleScrollEnd, DEFAULT_SCROLL_TO_CONFIG.duration);
     }
 
     private _clear()
@@ -345,8 +342,12 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this._reconcileItems(entry.scrollTop);
     };
 
-    private _handleScrollingChange = (isScrolling: boolean) =>
+    private _handleScrollChange = (isScrolling: boolean) =>
     {
+        if (!isScrolling)
+        {
+            this._handleScrollEnd();
+        }
         this.emit("scrollChange", isScrolling);
     };
 
@@ -360,7 +361,10 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this.emit("bottomReached");
     };
 
-    private _handleScrollComplete = () =>
+    /**
+     * Note: This method is debounced.
+     */
+    private _handleScrollEnd = () =>
     {
         this._clearInProgressScroll();
     };
