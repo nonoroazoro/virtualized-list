@@ -26,16 +26,16 @@ export function calculateRenderRange(
 /**
  * Calculates the index range of the items that have been rendered.
  *
- * @param {HTMLElement} container The container element.
+ * @param {HTMLElement} itemsContainer The items container element.
  */
-export function calculateRenderedIndexRange(container: HTMLElement): RenderedIndexRange | undefined
+export function calculateRenderedIndexRange(itemsContainer: HTMLElement): RenderedIndexRange | undefined
 {
-    const firstItemElement = container.firstElementChild as HTMLElement;
+    const firstItemElement = itemsContainer.firstElementChild as HTMLElement;
     if (firstItemElement)
     {
         return [
             readItemIndex(firstItemElement),
-            readItemIndex(container.lastElementChild as HTMLElement)
+            readItemIndex(itemsContainer.lastElementChild as HTMLElement)
         ];
     }
     return;
@@ -121,14 +121,14 @@ export function calculateAppendedItems<DataType>(
  * Calculates the elements that should be removed from the leading side of the list.
  *
  * @param {number} renderRangeTop The top of the render range.
- * @param {HTMLElement} container The container element.
+ * @param {HTMLElement} itemsContainer The items container element.
  */
-export function calculateLeadingRemovedElements(renderRangeTop: number, container: HTMLElement)
+export function calculateLeadingRemovedElements(renderRangeTop: number, itemsContainer: HTMLElement)
 {
     const elements: HTMLElement[] = [];
-    for (let i = 0; i < container.childElementCount; i++)
+    for (let i = 0; i < itemsContainer.childElementCount; i++)
     {
-        const element = container.children[i] as HTMLElement;
+        const element = itemsContainer.children[i] as HTMLElement;
         const itemBottom = element.offsetTop + element.offsetHeight;
         if (itemBottom <= renderRangeTop)
         {
@@ -146,14 +146,14 @@ export function calculateLeadingRemovedElements(renderRangeTop: number, containe
  * Calculates the elements that should be removed from the trailing side of the list.
  *
  * @param {number} renderRangeBottom The bottom of the render range.
- * @param {HTMLElement} container The container element.
+ * @param {HTMLElement} itemsContainer The items container element.
  */
-export function calculateTrailingRemovedElements(renderRangeBottom: number, container: HTMLElement)
+export function calculateTrailingRemovedElements(renderRangeBottom: number, itemsContainer: HTMLElement)
 {
     const elements: HTMLElement[] = [];
-    for (let i = container.childElementCount - 1; i >= 0; i--)
+    for (let i = itemsContainer.childElementCount - 1; i >= 0; i--)
     {
-        const element = container.children[i] as HTMLElement;
+        const element = itemsContainer.children[i] as HTMLElement;
         const itemTop = element.offsetTop;
         if (itemTop >= renderRangeBottom)
         {
