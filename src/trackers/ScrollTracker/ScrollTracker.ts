@@ -6,7 +6,7 @@ import type { IDisposable } from "../../IDisposable";
 import type { ScrollTrackerEventTypes } from "./ScrollTrackerEventTypes";
 
 /**
- * Provides a way to track the changes to the scrollbar position of a DOM element.
+ * Provides a way to track the changes to the scroll position of a DOM element.
  */
 export class ScrollTracker extends EventEmitter<ScrollTrackerEventTypes> implements IDisposable
 {
@@ -46,7 +46,7 @@ export class ScrollTracker extends EventEmitter<ScrollTrackerEventTypes> impleme
     }
 
     /**
-     * Observes and tracking the changes to the scrollbar position of an element
+     * Observes and tracking the changes to the scroll position of an element
      */
     public observe()
     {
@@ -85,12 +85,18 @@ export class ScrollTracker extends EventEmitter<ScrollTrackerEventTypes> impleme
         // See https://developer.mozilla.org/en-US/docs/Web/API/Document/scroll_event#scroll_event_throttling
         const target = e.target as Element;
         const scrollTop = target.scrollTop;
+        this._detectScrollEnd();
         this._updateScrollStatus(scrollTop);
-        this.emit("scroll", {
-            target,
-            scrollTop,
-            direction: this._scrollDirection
-        });
+
+        this.emit("scroll", { target, scrollTop, direction: this._scrollDirection });
+        if (scrollTop === 0)
+        {
+            this.emit("topReached");
+        }
+        else if (scrollTop + target.clientHeight >= target.scrollHeight)
+        {
+            this.emit("bottomReached");
+        }
     };
 
     private _updateScrollStatus(scrollTop: number)
@@ -103,10 +109,8 @@ export class ScrollTracker extends EventEmitter<ScrollTrackerEventTypes> impleme
         if (!this._isScrolling)
         {
             this._isScrolling = true;
-            this.emit("scrollingChange", true);
+            this.emit("scrollChange", true);
         }
-
-        this._detectScrollEnd();
     }
 
     /**
@@ -116,6 +120,6 @@ export class ScrollTracker extends EventEmitter<ScrollTrackerEventTypes> impleme
     {
         this._isScrolling = false;
         this._scrollDirection = ScrollDirection.NONE;
-        this.emit("scrollingChange", false);
+        this.emit("scrollChange", false);
     };
 }

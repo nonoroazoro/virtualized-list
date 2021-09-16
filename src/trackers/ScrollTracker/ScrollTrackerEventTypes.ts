@@ -6,16 +6,26 @@ import type { ScrollTrackerEntry } from "./ScrollTrackerEntry";
 export interface ScrollTrackerEventTypes
 {
     /**
-     * Triggers when the scrollbar position is changed.
+     * Triggers when the scroll position is changed.
      *
      * @param {ScrollTrackerEntry} entry The new scroll info.
      */
     scroll(entry: ScrollTrackerEntry): void;
 
     /**
-     * Triggers when the scrolling status is changed.
+     * Triggers when the scroll has started or stopped scrolling.
      *
-     * @param {boolean} isScrolling The new scrolling status.
+     * @param {boolean} isScrolling The new scroll status.
      */
-    scrollingChange(isScrolling: boolean): void;
+    scrollChange(isScrolling: boolean): void;
+
+    /**
+     * Triggers when the scroll has reached the top.
+     */
+    topReached(): void;
+
+    /**
+     * Triggers when the scroll has reached the bottom.
+     */
+    bottomReached(): void;
 }
