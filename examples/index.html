@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>virtualized-list</title>
+
+        <style>
+            .root {
+                height: 500px;
+                margin-top: 10px;
+            }
+
+            .rootSmallHeight {
+                height: 250px;
+            }
+
+            .rootSmallWidth {
+                width: 300px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <noscript>Please enable JavaScript to run this app.</noscript>
+        <div>
+            <button id="toggleHeight">Toggle Height</button>
+            <button id="toggleWidth">Toggle Width</button>
+            <button id="toggleSize">Toggle Size</button>
+            <button id="scrollToTop">Scroll to Top</button>
+            <button id="scrollToBottom">Scroll to Bottom</button>
+            <span>
+                <button id="scrollToIndex">Scroll to Index</button>
+                <span id="scrollIndex"></span>
+            </span>
+        </div>
+        <div class="root" id="root"></div>
+        <script src="/index.js"></script>
+    </body>
+
+</html>
