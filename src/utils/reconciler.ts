@@ -96,7 +96,7 @@ export function calculateAppendedItems<DataType>(
     const [renderRangeTop, renderRangeBottom] = renderRange;
     const lastChildIndex = readItemIndex(lastItemElement);
     let nextItemTop = lastItemElement.offsetTop + lastItemElement.offsetHeight;
-    for (let i = lastChildIndex + 1; i < itemDataManager.dataSource.length; i++)
+    for (let i = lastChildIndex + 1; i < itemDataManager.dataSourceLength; i++)
     {
         const itemData = itemDataManager.getItem(i);
         const height = itemData.height;
@@ -184,7 +184,7 @@ export function calculatePaddings<DataType>(renderedIndexRange: RenderedIndexRan
         paddingTop += itemDataManager.getItem(i).height;
     }
 
-    for (let i = renderedIndexEnd + 1; i < itemDataManager.dataSource.length; i++)
+    for (let i = renderedIndexEnd + 1; i < itemDataManager.dataSourceLength; i++)
     {
         paddingBottom += itemDataManager.getItem(i).height;
     }

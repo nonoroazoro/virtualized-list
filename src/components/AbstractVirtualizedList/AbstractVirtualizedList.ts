@@ -86,7 +86,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      *
      * This will trigger a re-render.
      */
-    public set data(value: DataType[])
+    public set dataSource(value: DataType[])
     {
         // TODO:
         // 1. update data attributes and item data array when the data is changed.
@@ -221,7 +221,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      */
     public scrollToBottom(isSmooth: ScrollOptionsSupported["isSmooth"] = false)
     {
-        this.scrollToIndex(this._itemDataManager.dataSource.length - 1, { isSmooth });
+        this.scrollToIndex(this._itemDataManager.dataSourceLength - 1, { isSmooth });
     }
 
     /**
@@ -232,7 +232,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      */
     public scrollToIndex(index: number, options?: ScrollOptionsSupported)
     {
-        let narrowedIndex = Math.min(index, this._itemDataManager.dataSource.length - 1);
+        let narrowedIndex = Math.min(index, this._itemDataManager.dataSourceLength - 1);
         narrowedIndex = Math.max(0, narrowedIndex);
 
         const position = this._itemDataManager.getItemOffset(narrowedIndex);

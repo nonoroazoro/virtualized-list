@@ -15,6 +15,15 @@ export class ItemDataManager<DataType> implements IDisposable
     private _list: AbstractVirtualizedList<DataType>;
 
     private _dataSource: DataType[] = [];
+    private _dataSourceLength: number = 0;
+
+    /**
+     * Gets the length of the dataSource.
+     */
+    public get dataSourceLength()
+    {
+        return this._dataSourceLength;
+    }
 
     /**
      * Gets the dataSource.
@@ -30,6 +39,7 @@ export class ItemDataManager<DataType> implements IDisposable
     public set dataSource(value: DataType[])
     {
         this._dataSource = value;
+        this._dataSourceLength = this._dataSource.length;
     }
 
     /**
@@ -91,7 +101,7 @@ export class ItemDataManager<DataType> implements IDisposable
      */
     getItemOffset(index: number): [offsetTop: number, height: number]
     {
-        if (index < 0 || index >= this._dataSource.length)
+        if (index < 0 || index >= this._dataSourceLength)
         {
             return [0, 0];
         }
@@ -128,7 +138,7 @@ export class ItemDataManager<DataType> implements IDisposable
     {
         let itemTop = 0;
         const [top, bottom] = renderRange;
-        for (let i = 0; i < this._dataSource.length; i++)
+        for (let i = 0; i < this._dataSourceLength; i++)
         {
             const itemData = this.getItem(i);
             const itemBottom = itemTop + itemData.height;
