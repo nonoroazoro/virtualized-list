@@ -14,6 +14,8 @@ This is a virtualized list written in vanilla JavaScript.
 
     1. Support `list resizing`.
 
+    1. Support `variable-sized` list header and footer.
+
 - ***Fast***
 
     1. Render `millions` of items in `milliseconds`.
