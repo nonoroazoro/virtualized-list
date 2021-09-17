@@ -110,7 +110,7 @@ export class ItemDataManager<DataType> implements IDisposable
 
         // TODO: cache offsets to improve performance.
         const item = this.getItem(index);
-        let offsetTop = 0;
+        let offsetTop = this._list.listHeaderContainer.offsetHeight;
         for (let i = 0; i < index; i++)
         {
             offsetTop += this.getItem(i).height;
