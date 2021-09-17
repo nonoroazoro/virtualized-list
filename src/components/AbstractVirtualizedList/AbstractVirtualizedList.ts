@@ -396,6 +396,11 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      */
     private _reconcileItems(scrollTop: number)
     {
+        if (this._itemDataManager.dataSourceLength === 0)
+        {
+            return;
+        }
+
         let prependedItems: Array<ItemData<DataType>> = [];
         let appendedItems: Array<ItemData<DataType>> = [];
         let leadingRemoved: HTMLElement[] = [];
