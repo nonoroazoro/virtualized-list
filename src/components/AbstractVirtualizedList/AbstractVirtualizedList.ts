@@ -265,11 +265,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     private _clear()
     {
-        if (this._listEmpty != null)
-        {
-            this._listEmpty.remove();
-            this._listEmpty = undefined;
-        }
+        this._removeListEmpty();
         this._reconciler.clear();
     }
 
@@ -346,6 +342,15 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         if (this._listEmpty != null)
         {
             this._itemsContainer.append(this._listEmpty);
+        }
+    }
+
+    private _removeListEmpty()
+    {
+        if (this._listEmpty != null)
+        {
+            this._listEmpty.remove();
+            this._listEmpty = undefined;
         }
     }
 
