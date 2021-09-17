@@ -38,8 +38,10 @@ export class ItemDataManager<DataType> implements IDisposable
      */
     public set dataSource(value: DataType[])
     {
+        // TODO: Diff Data.
         this._dataSource = value;
         this._dataSourceLength = this._dataSource.length;
+        this._data = [];
     }
 
     /**
