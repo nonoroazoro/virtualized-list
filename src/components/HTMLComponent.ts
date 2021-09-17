@@ -58,7 +58,7 @@ export class HTMLComponent<T extends ValidEventTypes = string | symbol> extends 
 
         if (element == null)
         {
-            throw new Error("The parameter element is null or empty");
+            throw new TypeError("The parameter element is null or empty");
         }
 
         if (isString(element))
