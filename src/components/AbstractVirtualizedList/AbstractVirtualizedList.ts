@@ -150,6 +150,27 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      */
     protected abstract renderListItem(itemData: DataType, key: string, index: number): HTMLElement;
 
+    /**
+     * Renders the empty state placeholder when the list has no items.
+     *
+     * @returns Returns the corresponding `HTMLElement`.
+     */
+    protected renderListEmpty(): HTMLElement | undefined { return; }
+
+    /**
+     * Renders the list header.
+     *
+     * @returns Returns the corresponding `HTMLElement`.
+     */
+    protected renderListHeader(): HTMLElement | undefined { return; }
+
+    /**
+     * Renders the list footer.
+     *
+     * @returns Returns the corresponding `HTMLElement`.
+     */
+    protected renderListFooter(): HTMLElement | undefined { return; }
+
     public override appendTo(element: DocumentFragment | HTMLComponent | HTMLElement)
     {
         super.appendTo(element);
