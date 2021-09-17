@@ -7,7 +7,7 @@ export class InheritedMessageList extends AbstractVirtualizedList<Message>
     constructor(options: VirtualizedListOptions)
     {
         super(options);
-        this.element.style.border = "1px solid blue";
+        this.container.style.border = "1px solid blue";
     }
 
     protected renderListItem(itemData: Message, key: string, index: number): HTMLElement

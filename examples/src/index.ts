@@ -80,5 +80,5 @@ for (let i = 0; i < 100001; i++)
 }
 
 list.appendTo(root);
-list.data = data;
+list.dataSource = data;
 // list.scrollToBottom();
