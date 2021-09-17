@@ -158,14 +158,14 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     public override dispose()
     {
+        this._clearInProgressScroll();
+
         this._itemDataManager.dispose();
 
         this._scrollTracker.dispose();
         this._scrollableResizeTracker.dispose();
         this._itemsResizeTracker.dispose();
         this._scrollManager.dispose();
-
-        this._clearInProgressScroll();
 
         super.dispose();
     }
