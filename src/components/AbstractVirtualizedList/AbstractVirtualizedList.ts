@@ -1,30 +1,15 @@
 import cs from "classnames";
 
-import
-{
-    calculateAppendedItems,
-    calculateLeadingRemovedElements,
-    calculatePaddings,
-    calculatePrependedItems,
-    calculateRenderedIndexRange,
-    calculateRenderRange,
-    calculateTrailingRemovedElements,
-    debounce,
-    DEFAULT_SCROLL_TO_CONFIG,
-    isRangeEqual,
-    log,
-    offsetRange,
-    removeElements,
-    writeItemDataset
-} from "../../utils";
+import { debounce, DEFAULT_SCROLL_TO_CONFIG, log } from "../../utils";
 import { DEFAULT_LIST_CONFIG } from "./VirtualizedListConfig";
 import { HTMLComponent } from "../HTMLComponent";
 import { ItemDataManager } from "../../store";
-import { ResizeTracker, ScrollTracker } from "../../trackers";
+import { Reconciler } from "../../reconciler";
 import { ScrollManager } from "../../scroll";
-import type { ItemData, RenderedIndexRange, RenderRange } from "../../types";
-import type { ResizeTrackerEntry, ScrollTrackerEntry } from "../../trackers";
+import { ScrollTracker } from "../../trackers";
+import type { ItemData } from "../../types";
 import type { ScrollOptionsSupported } from "../../scroll";
+import type { ScrollTrackerEntry } from "../../trackers";
 import type { VirtualizedListConfig } from "./VirtualizedListConfig";
 import type { VirtualizedListEventTypes } from "./VirtualizedListEventTypes";
 import type { VirtualizedListOptions } from "./VirtualizedListOptions";
@@ -40,43 +25,14 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     private _itemDataManager: ItemDataManager<DataType>;
     private _scrollTracker: ScrollTracker;
-    private _scrollableResizeTracker: ResizeTracker;
-    private _itemsResizeTracker: ResizeTracker;
     private _scrollManager: ScrollManager;
-
+    private _reconciler: Reconciler<DataType>;
     private _continueScrollToIndex: Function | undefined;
-
-    private _renderRange: RenderRange = [0, 0];
-    private _currentRenderedIndexRange: RenderedIndexRange | undefined;
 
     private _listEmpty: HTMLElement | undefined;
 
-    private _paddingTop = 0;
-    private get paddingTop()
-    {
-        return this._paddingTop;
-    }
-
-    private set paddingTop(value: number)
-    {
-        this._paddingTop = value;
-        this._itemsContainer.style.paddingTop = `${value}px`;
-    }
-
-    private _paddingBottom = 0;
-    private get paddingBottom()
-    {
-        return this._paddingBottom;
-    }
-
-    private set paddingBottom(value: number)
-    {
-        this._paddingBottom = value;
-        this._itemsContainer.style.paddingBottom = `${value}px`;
-    }
-
     /**
-     * Gets the options for the list.
+     * Gets the options of the list.
      */
     public get options()
     {
@@ -86,14 +42,11 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     /**
      * Sets the data source of the list.
      *
-     * This will trigger a re-render.
+     * Note: This triggers a re-render.
      */
     public set dataSource(value: DataType[])
     {
-        // TODO:
-        // 1. update data attributes and item data array when the data is changed.
-        // 2. re-render.
-        log("=== set data ===");
+        log("=== set dataSource ===");
         this._itemDataManager.dataSource = value;
         this._render();
     }
@@ -179,16 +132,31 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this._render();
     }
 
+    /**
+     * Creates a list item from {@link ItemData}.
+     *
+     * @param {ItemData<DataType>} itemData The specified {@link ItemData}.
+     * @returns Returns the corresponding `HTMLElement`.
+     */
+    public createListItem(itemData: ItemData<DataType>)
+    {
+        const element = this.createElement("div");
+        element.appendChild(this.renderListItem(
+            itemData.data,
+            itemData.key,
+            itemData.index
+        ));
+        return element;
+    }
+
     public override dispose()
     {
         this._clearInProgressScroll();
 
-        this._itemDataManager.dispose();
-
-        this._scrollTracker.dispose();
-        this._scrollableResizeTracker.dispose();
-        this._itemsResizeTracker.dispose();
+        this._reconciler.dispose();
         this._scrollManager.dispose();
+        this._scrollTracker.dispose();
+        this._itemDataManager.dispose();
 
         this._listEmpty = undefined;
 
@@ -286,16 +254,13 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this._scrollTracker.on("bottomReached", this._handleBottomReached);
         this._scrollTracker.observe();
 
-        // Init ScrollableResizeTracker.
-        this._scrollableResizeTracker = new ResizeTracker(this._handleScrollableResize);
-        this._scrollableResizeTracker.observe(this._scrollableContainer);
-
-        // Init ItemsResizeTracker.
-        this._itemsResizeTracker = new ResizeTracker(this._handleItemsResize);
-
         // Init ScrollManager.
         this._scrollManager = new ScrollManager(this._scrollableContainer);
         this._handleScrollEnd = debounce(this._handleScrollEnd, DEFAULT_SCROLL_TO_CONFIG.duration);
+
+        // Init Reconciler.
+        this._reconciler = new Reconciler(this, this._itemDataManager);
+        this._reconciler.on("itemsResize", this._handleItemsResize);
     }
 
     private _clear()
@@ -305,90 +270,46 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
             this._listEmpty.remove();
             this._listEmpty = undefined;
         }
-        this._removeItemElements([...this._itemsContainer.children]);
-        this._currentRenderedIndexRange = undefined;
-        this.paddingBottom = 0;
-        this.paddingTop = 0;
-        this._scrollManager.scrollToTop();
+        this._reconciler.clear();
     }
 
-    /**
-     * Initializes the list items.
-     */
     private _render()
     {
-        // Render after the list container is isAppended.
+        // Only render if the list container has been appended.
         if (this._isAppended)
         {
-            // TODO: add diff and re-render.
             const scrollTop = this._scrollableContainer.scrollTop;
-            // If we have a way to diff the data, we can bypass this clear function.
+
+            // TODO: If we have a way to diff the data, we can bypass this clear function.
             this._clear();
 
             if (this._itemDataManager.dataSourceLength === 0)
             {
+                log("=== render: List Empty");
                 this._renderListEmpty();
             }
             else
             {
-                log("=== reconcile: Render");
-                this._reconcileItems(scrollTop);
+                log("=== render: reconcile");
+                this._reconciler.reconcile(scrollTop);
             }
         }
     }
 
-    private _handleScrollableResize = (entries: ResizeTrackerEntry[]) =>
-    {
-        // Update the render range.
-        const renderRange = calculateRenderRange(
-            this._options.leadingBufferZone,
-            this._options.trailingBufferZone,
-            entries[0].contentHeight
-        );
-        if (!isRangeEqual(this._renderRange, renderRange))
-        {
-            this._renderRange = renderRange;
-            log("=== reconcile: Scrollable Resize");
-            this._reconcileItems(this._scrollableContainer.scrollTop);
-        }
-    };
-
-    private _handleItemsResize = (entries: ResizeTrackerEntry[]) =>
-    {
-        // 1. Updates items' height and calculates the total height difference.
-        const delta = entries.reduce(
-            (acc, entry) => acc + this._itemDataManager.updateItemHeight(entry.target, entry.contentHeight),
-            0
-        );
-
-        // 2. Reconcile items.
-        log("=== reconcile: Items Resize");
-        this._reconcileItems(this._scrollableContainer.scrollTop);
-
-        // 3. Due to the items resizing, we need to continue the in-progress scroll.
-        // This will fix the scrollToIndex method.
-        if (delta !== 0 && this._continueScrollToIndex)
-        {
-            this._continueScrollToIndex();
-        }
-    };
-
     private _handleScroll = (entry: ScrollTrackerEntry) =>
     {
-        this.emit("scroll", entry);
-
-        // Reconcile items while scrolling.
         log("=== reconcile: Scroll");
-        this._reconcileItems(entry.scrollTop);
+        this.emit("scroll", entry);
+        this._reconciler.reconcile(entry.scrollTop);
     };
 
     private _handleScrollChange = (isScrolling: boolean) =>
     {
+        this.emit("scrollChange", isScrolling);
         if (!isScrolling)
         {
             this._handleScrollEnd();
         }
-        this.emit("scrollChange", isScrolling);
     };
 
     private _handleTopReached = () =>
@@ -409,155 +330,15 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this._clearInProgressScroll();
     };
 
-    /**
-     * Conciliates the items rendered in the list.
-     *
-     * Note: This method will adds/removes items and update paddings.
-     */
-    private _reconcileItems(scrollTop: number)
+    private _handleItemsResize = (delta: number) =>
     {
-        if (this._itemDataManager.dataSourceLength === 0)
+        // Due to the items resizing, we need to continue the in-progress scroll.
+        // This fulfils the scrollToIndex method.
+        if (delta !== 0 && this._continueScrollToIndex)
         {
-            return;
+            this._continueScrollToIndex();
         }
-
-        let prependedItems: Array<ItemData<DataType>> = [];
-        let appendedItems: Array<ItemData<DataType>> = [];
-        let leadingRemoved: HTMLElement[] = [];
-        let trailingRemoved: HTMLElement[] = [];
-
-        // Calculates the offset render range.
-        const offsetRenderRange = offsetRange(this._renderRange, scrollTop);
-        if (this._itemsContainer.childElementCount > 0)
-        {
-            const [renderRangeTop, renderRangeBottom] = offsetRenderRange;
-
-            // 1. Calculates items that should be preprened.
-            prependedItems = calculatePrependedItems(
-                offsetRenderRange,
-                this._itemsContainer.firstElementChild as HTMLElement,
-                this._itemDataManager
-            );
-
-            // 2. Calculates items that should be appended.
-            appendedItems = calculateAppendedItems(
-                offsetRenderRange,
-                this._itemsContainer.lastElementChild as HTMLElement,
-                this._itemDataManager
-            );
-
-            // 3. Calculates items that should be removed from the leading side of the list.
-            if (prependedItems.length === 0)
-            {
-                // Bypassed if scroll up or we are about to prepend items.
-                leadingRemoved = calculateLeadingRemovedElements(renderRangeTop, this._itemsContainer);
-            }
-
-            // 4. Calculates items that should be removed from the trailing side of the list.
-            if (appendedItems.length === 0)
-            {
-                // Bypassed if scroll down or we are about to append items.
-                trailingRemoved = calculateTrailingRemovedElements(renderRangeBottom, this._itemsContainer);
-            }
-        }
-        else
-        {
-            // 5. Calculates items from the scratch.
-            appendedItems = this._itemDataManager.getItemsByRange(offsetRenderRange);
-        }
-
-        log("prependedItems", prependedItems);
-        log("appendedItems", appendedItems);
-        log("leadingRemoved", leadingRemoved);
-        log("trailingRemoved", trailingRemoved);
-
-        // 5. Remove elements.
-        this._removeItemElements(leadingRemoved);
-        this._removeItemElements(trailingRemoved);
-
-        // 6. Render items.
-        this._itemsContainer.append(...appendedItems.map(itemData => this._createItemElement(itemData)));
-        this._itemsContainer.prepend(...prependedItems.map(itemData => this._createItemElement(itemData)));
-
-        // 7. Update paddings to make up scrollHeight.
-        this._updatePaddings();
-    }
-
-    private _updatePaddings()
-    {
-        const nextRenderedIndexRange = calculateRenderedIndexRange(this._itemsContainer);
-        if (nextRenderedIndexRange == null)
-        {
-            log("=== update paddings: clear ===");
-            // 1. Clear paddings.
-            this.paddingTop = 0;
-            this.paddingBottom = 0;
-        }
-        else if (this._currentRenderedIndexRange == null)
-        {
-            log("=== update paddings: rebuild ===");
-            // 2. Build the paddings `from the scratch`.
-            // Note: This is an `expensive operation`, should never be called frequently.
-            const { paddingTop, paddingBottom } = calculatePaddings(nextRenderedIndexRange, this._itemDataManager);
-            this.paddingTop = paddingTop;
-            this.paddingBottom = paddingBottom;
-        }
-        else if (!isRangeEqual(this._currentRenderedIndexRange, nextRenderedIndexRange))
-        {
-            // 3. Update paddings incrementally.
-            log("=== update paddings: incremental ===", this._currentRenderedIndexRange, "=>", nextRenderedIndexRange);
-
-            // Calculates padding top.
-            let deltaPaddingTop = 0;
-            let sign = 1;
-            let start = this._currentRenderedIndexRange[0];
-            let end = nextRenderedIndexRange[0];
-            if (end < start)
-            {
-                // Swap.
-                sign *= -1;
-                end = start;
-                start = nextRenderedIndexRange[0];
-            }
-            // [start, end)
-            for (let i = start; i < end; i++)
-            {
-                deltaPaddingTop += this._itemDataManager.getItem(i).height;
-            }
-            deltaPaddingTop *= sign;
-
-            // Calculates padding bottom.
-            let deltaPaddingBottom = 0;
-            sign = -1;
-            start = this._currentRenderedIndexRange[1];
-            end = nextRenderedIndexRange[1];
-            if (end < start)
-            {
-                // Swap.
-                sign *= -1;
-                end = start;
-                start = nextRenderedIndexRange[1];
-            }
-            // (start, end]
-            for (let i = start + 1; i <= end; i++)
-            {
-                deltaPaddingBottom += this._itemDataManager.getItem(i).height;
-            }
-            deltaPaddingBottom *= sign;
-
-            log("=== update paddings: delta ===", deltaPaddingTop, deltaPaddingBottom);
-            if (deltaPaddingTop !== 0)
-            {
-                this.paddingTop += deltaPaddingTop;
-            }
-
-            if (deltaPaddingBottom !== 0)
-            {
-                this.paddingBottom += deltaPaddingBottom;
-            }
-        }
-        this._currentRenderedIndexRange = nextRenderedIndexRange;
-    }
+    };
 
     private _renderListEmpty()
     {
@@ -566,27 +347,6 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         {
             this._itemsContainer.append(this._listEmpty);
         }
-    }
-
-    private _createItemElement(itemData: ItemData<DataType>)
-    {
-        const element = this.createElement("div", styles.listItem);
-        element.appendChild(this.renderListItem(
-            itemData.data,
-            itemData.key,
-            itemData.index
-        ));
-        writeItemDataset(element, itemData);
-        this._itemsResizeTracker.observe(element);
-        return element;
-    }
-
-    private _removeItemElements(elements: Element[])
-    {
-        removeElements(elements, element =>
-        {
-            this._itemsResizeTracker.unobserve(element);
-        });
     }
 
     private _clearInProgressScroll()
