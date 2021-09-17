@@ -29,25 +29,37 @@ export class InheritedMessageList extends AbstractVirtualizedList<Message>
 
     protected override renderListHeader()
     {
-        const empty = this.createElement("div");
-        empty.textContent = "List Header";
-        empty.style.textAlign = "center";
-        empty.style.padding = `${Math.floor(Math.random() * 50)}px`;
-        empty.style.backgroundColor = "#ddd";
-        return empty;
+        const header = this.createElement("div");
+        header.textContent = "List Header";
+        header.style.textAlign = "center";
+        header.style.padding = `${Math.floor(Math.random() * 500)}px 0`;
+        // header.style.padding = `500px 0`;
+        header.style.backgroundColor = "#ddd";
+        return header;
     }
 
-    // protected override renderListEmpty()
-    // {
-    //     const empty = this.createElement("div");
-    //     empty.textContent = "No Items";
-    //     empty.style.textAlign = "center";
-    //     empty.style.padding = "100px";
-    //     empty.style.border = "1px solid green";
-    //     empty.style.margin = "20px";
-    //     // empty.style.marginBottom = "500px";
-    //     return empty;
-    // }
+    protected override renderListFooter()
+    {
+        const footer = this.createElement("div");
+        footer.textContent = "List Footer";
+        footer.style.textAlign = "center";
+        footer.style.padding = `${Math.floor(Math.random() * 500)}px 0`;
+        // footer.style.padding = `500px 0`;
+        footer.style.backgroundColor = "#ddd";
+        return footer;
+    }
+
+    protected override renderListEmpty()
+    {
+        const empty = this.createElement("div");
+        empty.textContent = "No Items";
+        empty.style.textAlign = "center";
+        empty.style.padding = "100px";
+        empty.style.border = "1px solid green";
+        empty.style.margin = "20px";
+        // empty.style.marginBottom = "500px";
+        return empty;
+    }
 
     public generateItemKey(itemData: Message)
     {
