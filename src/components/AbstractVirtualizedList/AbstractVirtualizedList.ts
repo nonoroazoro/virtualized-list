@@ -49,6 +49,8 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private _renderRange: RenderRange = [0, 0];
     private _currentRenderedIndexRange: RenderedIndexRange | undefined;
 
+    private _listEmpty: HTMLElement | undefined;
+
     private _paddingTop = 0;
     private get paddingTop()
     {
@@ -188,6 +190,8 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this._itemsResizeTracker.dispose();
         this._scrollManager.dispose();
 
+        this._listEmpty = undefined;
+
         super.dispose();
     }
 
@@ -252,7 +256,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         }
 
         // Set in-progress scroll.
-        this._continueScrollToIndex = this.scrollToIndex.bind(this, index, options);
+        this._continueScrollToIndex = this.scrollToIndex.bind(this, narrowedIndex, options);
 
         // Start scrolling.
         this._scrollManager.scrollTo(offsetTop, options);
@@ -296,7 +300,16 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     private _clear()
     {
-        this._removeItemElements(this._itemsContainer.children);
+        if (this._listEmpty != null)
+        {
+            this._listEmpty.remove();
+            this._listEmpty = undefined;
+        }
+        this._removeItemElements([...this._itemsContainer.children]);
+        this._currentRenderedIndexRange = undefined;
+        this.paddingBottom = 0;
+        this.paddingTop = 0;
+        this._scrollManager.scrollToTop();
     }
 
     /**
@@ -308,12 +321,19 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         if (this._isAppended)
         {
             // TODO: add diff and re-render.
-            // If we have a way to diff the data, we can bypass this clear function.
             const scrollTop = this._scrollableContainer.scrollTop;
+            // If we have a way to diff the data, we can bypass this clear function.
             this._clear();
 
-            log("=== reconcile: Render");
-            this._reconcileItems(scrollTop);
+            if (this._itemDataManager.dataSourceLength === 0)
+            {
+                this._renderListEmpty();
+            }
+            else
+            {
+                log("=== reconcile: Render");
+                this._reconcileItems(scrollTop);
+            }
         }
     }
 
@@ -539,6 +559,15 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         this._currentRenderedIndexRange = nextRenderedIndexRange;
     }
 
+    private _renderListEmpty()
+    {
+        this._listEmpty = this.renderListEmpty();
+        if (this._listEmpty != null)
+        {
+            this._itemsContainer.append(this._listEmpty);
+        }
+    }
+
     private _createItemElement(itemData: ItemData<DataType>)
     {
         const element = this.createElement("div", styles.listItem);
@@ -552,9 +581,9 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         return element;
     }
 
-    private _removeItemElements(elements: HTMLCollection | HTMLElement[])
+    private _removeItemElements(elements: Element[])
     {
-        removeElements(elements, (element: HTMLElement) =>
+        removeElements(elements, element =>
         {
             this._itemsResizeTracker.unobserve(element);
         });
