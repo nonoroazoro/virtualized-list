@@ -3,12 +3,12 @@ import { InheritedMessageList } from "./InheritedMessageList";
 import type { Message } from "./Message";
 
 const root = document.getElementById("root") as HTMLDivElement;
-// const list = new InheritedMessageList({ className: "messageList" });
-const list = new VirtualizedList({
-    className: "messageList",
-    generateItemKey,
-    renderListItem
-});
+const list = new InheritedMessageList({ className: "messageList" });
+// const list = new VirtualizedList({
+//     className: "messageList",
+//     generateItemKey,
+//     renderListItem
+// });
 
 function renderListItem(itemData: Message, key: string, index: number): HTMLElement
 {
@@ -81,4 +81,20 @@ for (let i = 0; i < 100001; i++)
 
 list.appendTo(root);
 list.dataSource = data;
+// setTimeout(() =>
+// {
+//     list.dataSource = [];
+//     setTimeout(() =>
+//     {
+//         list.dataSource = data;
+//         setTimeout(() =>
+//         {
+//             list.dataSource = [];
+//             setTimeout(() =>
+//             {
+//                 list.dataSource = data;
+//             }, 2000);
+//         }, 2000);
+//     }, 2000);
+// }, 2000);
 // list.scrollToBottom();
