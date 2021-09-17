@@ -43,9 +43,9 @@ export class ResizeTracker implements IDisposable
     /**
      * Stops observing an element.
      *
-     * @param {HTMLElement} target A reference to the tracked element.
+     * @param {Element} target A reference to the tracked element.
      */
-    public unobserve(target: HTMLElement)
+    public unobserve(target: Element)
     {
         if (this._observer)
         {
