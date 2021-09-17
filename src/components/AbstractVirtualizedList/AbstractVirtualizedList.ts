@@ -30,6 +30,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private _continueScrollToIndex: Function | undefined;
 
     private _listHeader: HTMLElement | undefined;
+    private _listFooter: HTMLElement | undefined;
     private _listEmpty: HTMLElement | undefined;
 
     /**
@@ -77,6 +78,15 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     public get itemsContainer(): HTMLDivElement
     {
         return this._itemsContainer;
+    }
+
+    private _listFooterContainer: HTMLDivElement;
+    /**
+     * Gets the list footer container element.
+     */
+    public get listFooterContainer(): HTMLDivElement
+    {
+        return this._listFooterContainer;
     }
 
     /**
@@ -193,6 +203,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      */
     public scrollToTop(isSmooth: ScrollOptionsSupported["isSmooth"] = false)
     {
+        this._clearInProgressScroll();
         this._scrollManager.scrollTo(0, { isSmooth });
     }
 
@@ -203,7 +214,12 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      */
     public scrollToBottom(isSmooth: ScrollOptionsSupported["isSmooth"] = false)
     {
-        this.scrollToIndex(this._itemDataManager.dataSourceLength - 1, { isSmooth });
+        // TODO: May trigger bottomReached event twice (it actually reached bottom twice...).
+        // Set in-progress scroll.
+        this._continueScrollToIndex = this.scrollToBottom.bind(this, isSmooth);
+
+        // Start scrolling.
+        this._scrollManager.scrollToBottom({ isSmooth });
     }
 
     /**
@@ -246,15 +262,19 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         // Create scrollable container.
         this._scrollableContainer = this.createElement("div", styles.scrollableContainer);
 
+        // Create list header container.
+        this._listHeaderContainer = this.createElement("div");
+
         // Create items container.
         this._itemsContainer = this.createElement("div", styles.itemsContainer);
 
-        // Create list header container.
-        this._listHeaderContainer = this.createElement("div");
+        // Create list footer container.
+        this._listFooterContainer = this.createElement("div");
 
         // Commit.
         this._scrollableContainer.appendChild(this._listHeaderContainer);
         this._scrollableContainer.appendChild(this._itemsContainer);
+        this._scrollableContainer.appendChild(this._listFooterContainer);
         this.appendChild(this._scrollableContainer);
 
         // Init ItemDataManager.
@@ -280,6 +300,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private _clear()
     {
         this._removeListHeader();
+        this._removeListFooter();
         this._removeListEmpty();
         this._reconciler.reset();
     }
@@ -295,9 +316,9 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
             this._clear();
 
             this._renderListHeader();
+            this._renderListFooter();
             if (this._itemDataManager.dataSourceLength === 0)
             {
-                log("=== render: List Empty");
                 this._renderListEmpty();
             }
             else
@@ -363,6 +384,15 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         }
     }
 
+    private _renderListFooter()
+    {
+        this._listFooter = this.renderListFooter();
+        if (this._listFooter != null)
+        {
+            this._listFooterContainer.append(this._listFooter);
+        }
+    }
+
     private _renderListEmpty()
     {
         this._listEmpty = this.renderListEmpty();
@@ -378,6 +408,15 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         {
             this._listHeader.remove();
             this._listHeader = undefined;
+        }
+    }
+
+    private _removeListFooter()
+    {
+        if (this._listFooter != null)
+        {
+            this._listFooter.remove();
+            this._listFooter = undefined;
         }
     }
 
