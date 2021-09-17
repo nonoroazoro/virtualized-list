@@ -29,6 +29,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private _reconciler: Reconciler<DataType>;
     private _continueScrollToIndex: Function | undefined;
 
+    private _listHeaderContainer: HTMLDivElement;
     private _listEmpty: HTMLElement | undefined;
 
     /**
@@ -239,7 +240,11 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         // Create items container.
         this._itemsContainer = this.createElement("div", styles.itemsContainer);
 
+        // Create list header container.
+        this._listHeaderContainer = this.createElement("div");
+
         // Commit.
+        this._scrollableContainer.appendChild(this._listHeaderContainer);
         this._scrollableContainer.appendChild(this._itemsContainer);
         this.appendChild(this._scrollableContainer);
 
