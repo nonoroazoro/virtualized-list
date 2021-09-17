@@ -10,6 +10,7 @@ import
     calculateRenderRange,
     calculateTrailingRemovedElements,
     isRangeEqual,
+    log,
     offsetRange,
     writeItemDataset
 } from "../utils";
@@ -161,6 +162,7 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
     {
         this._removeListItems([...this._list.itemsContainer.children]);
         this._currentRenderedIndexRange = undefined;
+        this._renderRange = [0, 0];
         this.paddingBottom = 0;
         this.paddingTop = 0;
         this._list.scrollableContainer.scrollTop = 0;
@@ -172,22 +174,23 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
         this._containersResizeTracker.dispose();
         this._itemsResizeTracker.dispose();
         this._currentRenderedIndexRange = undefined;
+        this._renderRange = [0, 0];
     }
 
     private _handleContainersResize = (entries: ResizeTrackerEntry[]) =>
     {
-        let listHeaderHeight: number | undefined;
         let scrollableHeight: number | undefined;
+        let listHeaderHeight: number | undefined;
         entries.forEach(entry =>
         {
             const { target } = entry;
-            if (target === this._list.listHeaderContainer)
-            {
-                listHeaderHeight = entry.contentHeight;
-            }
-            else if (target === this._list.scrollableContainer)
+            if (target === this._list.scrollableContainer)
             {
                 scrollableHeight = entry.contentHeight;
+            }
+            else if (target === this._list.listHeaderContainer)
+            {
+                listHeaderHeight = entry.contentHeight;
             }
         });
 
@@ -231,71 +234,70 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
     private _updatePaddings()
     {
         const nextRenderedIndexRange = calculateRenderedIndexRange(this._list.itemsContainer);
-        if (nextRenderedIndexRange == null)
+        if (nextRenderedIndexRange != null && this._currentRenderedIndexRange != null)
         {
-            // 1. Clear paddings.
-            this.paddingTop = 0;
-            this.paddingBottom = 0;
+            if (!isRangeEqual(this._currentRenderedIndexRange, nextRenderedIndexRange))
+            {
+                // 1. Update paddings incrementally.
+
+                // Calculates padding top.
+                let deltaPaddingTop = 0;
+                let sign = 1;
+                let start = this._currentRenderedIndexRange[0];
+                let end = nextRenderedIndexRange[0];
+                if (end < start)
+                {
+                    // Swap.
+                    sign *= -1;
+                    end = start;
+                    start = nextRenderedIndexRange[0];
+                }
+                // [start, end)
+                for (let i = start; i < end; i++)
+                {
+                    deltaPaddingTop += this._itemDataManager.getItem(i).height;
+                }
+                deltaPaddingTop *= sign;
+
+                // Calculates padding bottom.
+                let deltaPaddingBottom = 0;
+                sign = -1;
+                start = this._currentRenderedIndexRange[1];
+                end = nextRenderedIndexRange[1];
+                if (end < start)
+                {
+                    // Swap.
+                    sign *= -1;
+                    end = start;
+                    start = nextRenderedIndexRange[1];
+                }
+                // (start, end]
+                for (let i = start + 1; i <= end; i++)
+                {
+                    deltaPaddingBottom += this._itemDataManager.getItem(i).height;
+                }
+                deltaPaddingBottom *= sign;
+
+                if (deltaPaddingTop !== 0)
+                {
+                    this.paddingTop += deltaPaddingTop;
+                }
+
+                if (deltaPaddingBottom !== 0)
+                {
+                    this.paddingBottom += deltaPaddingBottom;
+                }
+                log("=== Paddings: update", this.paddingTop, this.paddingBottom);
+            }
         }
-        else if (this._currentRenderedIndexRange == null)
+        else if (nextRenderedIndexRange !== this._currentRenderedIndexRange)
         {
-            // 2. Build the paddings `from the scratch`.
+            // 2. Build the paddings `from the scratch`: Bypassed if both RenderedIndexRanges are undefined.
             // Note: This is an `expensive operation`, should never be called frequently.
             const { paddingTop, paddingBottom } = calculatePaddings(nextRenderedIndexRange, this._itemDataManager);
             this.paddingTop = paddingTop;
             this.paddingBottom = paddingBottom;
-        }
-        else if (!isRangeEqual(this._currentRenderedIndexRange, nextRenderedIndexRange))
-        {
-            // 3. Update paddings incrementally.
-
-            // Calculates padding top.
-            let deltaPaddingTop = 0;
-            let sign = 1;
-            let start = this._currentRenderedIndexRange[0];
-            let end = nextRenderedIndexRange[0];
-            if (end < start)
-            {
-                // Swap.
-                sign *= -1;
-                end = start;
-                start = nextRenderedIndexRange[0];
-            }
-            // [start, end)
-            for (let i = start; i < end; i++)
-            {
-                deltaPaddingTop += this._itemDataManager.getItem(i).height;
-            }
-            deltaPaddingTop *= sign;
-
-            // Calculates padding bottom.
-            let deltaPaddingBottom = 0;
-            sign = -1;
-            start = this._currentRenderedIndexRange[1];
-            end = nextRenderedIndexRange[1];
-            if (end < start)
-            {
-                // Swap.
-                sign *= -1;
-                end = start;
-                start = nextRenderedIndexRange[1];
-            }
-            // (start, end]
-            for (let i = start + 1; i <= end; i++)
-            {
-                deltaPaddingBottom += this._itemDataManager.getItem(i).height;
-            }
-            deltaPaddingBottom *= sign;
-
-            if (deltaPaddingTop !== 0)
-            {
-                this.paddingTop += deltaPaddingTop;
-            }
-
-            if (deltaPaddingBottom !== 0)
-            {
-                this.paddingBottom += deltaPaddingBottom;
-            }
+            log("=== Paddings: build", paddingTop, paddingBottom);
         }
         this._currentRenderedIndexRange = nextRenderedIndexRange;
     }
