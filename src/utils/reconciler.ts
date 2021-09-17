@@ -173,20 +173,32 @@ export function calculateTrailingRemovedElements(renderRangeBottom: number, item
  * @param {RenderedIndexRange} renderedIndexRange The specified {@link RenderedIndexRange}.
  * @param {ItemDataManager<DataType>} itemDataManager The {@link ItemDataManager}.
  */
-export function calculatePaddings<DataType>(renderedIndexRange: RenderedIndexRange, itemDataManager: ItemDataManager<DataType>)
+export function calculatePaddings<DataType>(renderedIndexRange: RenderedIndexRange | undefined, itemDataManager: ItemDataManager<DataType>)
 {
     let paddingTop = 0;
     let paddingBottom = 0;
-    const [renderedIndexStart, renderedIndexEnd] = renderedIndexRange;
 
-    for (let i = 0; i < renderedIndexStart; i++)
+    if (renderedIndexRange == null)
     {
-        paddingTop += itemDataManager.getItem(i).height;
+        for (let i = 0; i < itemDataManager.dataSourceLength; i++)
+        {
+            paddingTop += itemDataManager.getItem(i).height;
+        }
+    }
+    else
+    {
+        const [renderedIndexStart, renderedIndexEnd] = renderedIndexRange;
+
+        for (let i = 0; i < renderedIndexStart; i++)
+        {
+            paddingTop += itemDataManager.getItem(i).height;
+        }
+
+        for (let i = renderedIndexEnd + 1; i < itemDataManager.dataSourceLength; i++)
+        {
+            paddingBottom += itemDataManager.getItem(i).height;
+        }
     }
 
-    for (let i = renderedIndexEnd + 1; i < itemDataManager.dataSourceLength; i++)
-    {
-        paddingBottom += itemDataManager.getItem(i).height;
-    }
     return { paddingTop, paddingBottom };
 }
