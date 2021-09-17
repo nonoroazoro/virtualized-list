@@ -107,7 +107,7 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
         {
             const [renderRangeTop, renderRangeBottom] = offsetRenderRange;
 
-            // 1. Calculates items that should be preprened.
+            // 1. Calculates items that should be prepended.
             prependedItems = calculatePrependedItems(
                 offsetRenderRange,
                 itemsContainer.firstElementChild as HTMLElement,
