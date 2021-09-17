@@ -141,15 +141,15 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
             appendedItems = this._itemDataManager.getItemsByRange(offsetRenderRange);
         }
 
-        // 5. Remove elements.
+        // 6. Remove elements.
         this._removeListItems(leadingRemoved);
         this._removeListItems(trailingRemoved);
 
-        // 6. Render items.
+        // 7. Render items.
         itemsContainer.append(...appendedItems.map(this._createListItem));
         itemsContainer.prepend(...prependedItems.map(this._createListItem));
 
-        // 7. Update paddings to make up scrollHeight.
+        // 8. Update paddings to make up scrollHeight.
         this._updatePaddings();
     }
 
