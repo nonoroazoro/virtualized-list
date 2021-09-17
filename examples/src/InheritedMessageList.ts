@@ -27,6 +27,16 @@ export class InheritedMessageList extends AbstractVirtualizedList<Message>
         return item;
     }
 
+    protected override renderListHeader()
+    {
+        const empty = this.createElement("div");
+        empty.textContent = "List Header";
+        empty.style.textAlign = "center";
+        empty.style.padding = `${Math.floor(Math.random() * 50)}px`;
+        empty.style.backgroundColor = "#ddd";
+        return empty;
+    }
+
     // protected override renderListEmpty()
     // {
     //     const empty = this.createElement("div");
