@@ -266,7 +266,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private _clear()
     {
         this._removeListEmpty();
-        this._reconciler.clear();
+        this._reconciler.reset();
     }
 
     private _render()

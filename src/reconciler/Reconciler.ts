@@ -156,7 +156,7 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
     /**
      * Removes all list items and resets the {@link RenderRange}, paddings, scroll, etc.
      */
-    public clear()
+    public reset()
     {
         this._removeListItems([...this._list.itemsContainer.children]);
         this._currentRenderedIndexRange = undefined;
