@@ -29,7 +29,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     private _reconciler: Reconciler<DataType>;
     private _continueScrollToIndex: Function | undefined;
 
-    private _listHeaderContainer: HTMLDivElement;
+    private _listHeader: HTMLElement | undefined;
     private _listEmpty: HTMLElement | undefined;
 
     /**
@@ -59,6 +59,15 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
     public get scrollableContainer(): HTMLDivElement
     {
         return this._scrollableContainer;
+    }
+
+    private _listHeaderContainer: HTMLDivElement;
+    /**
+     * Gets the list header container element.
+     */
+    public get listHeaderContainer(): HTMLDivElement
+    {
+        return this._listHeaderContainer;
     }
 
     private _itemsContainer: HTMLDivElement;
@@ -184,7 +193,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
      */
     public scrollToTop(isSmooth: ScrollOptionsSupported["isSmooth"] = false)
     {
-        this.scrollToIndex(0, { isSmooth });
+        this._scrollManager.scrollTo(0, { isSmooth });
     }
 
     /**
@@ -270,6 +279,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     private _clear()
     {
+        this._removeListHeader();
         this._removeListEmpty();
         this._reconciler.reset();
     }
@@ -284,6 +294,7 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
             // TODO: If we have a way to diff the data, we can bypass this clear function.
             this._clear();
 
+            this._renderListHeader();
             if (this._itemDataManager.dataSourceLength === 0)
             {
                 log("=== render: List Empty");
@@ -315,11 +326,13 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
 
     private _handleTopReached = () =>
     {
+        log("=== scroll topReached");
         this.emit("topReached");
     };
 
     private _handleBottomReached = () =>
     {
+        log("=== scroll bottomReached");
         this.emit("bottomReached");
     };
 
@@ -341,12 +354,30 @@ export abstract class AbstractVirtualizedList<DataType> extends HTMLComponent<Vi
         }
     };
 
+    private _renderListHeader()
+    {
+        this._listHeader = this.renderListHeader();
+        if (this._listHeader != null)
+        {
+            this._listHeaderContainer.append(this._listHeader);
+        }
+    }
+
     private _renderListEmpty()
     {
         this._listEmpty = this.renderListEmpty();
         if (this._listEmpty != null)
         {
             this._itemsContainer.append(this._listEmpty);
+        }
+    }
+
+    private _removeListHeader()
+    {
+        if (this._listHeader != null)
+        {
+            this._listHeader.remove();
+            this._listHeader = undefined;
         }
     }
 
