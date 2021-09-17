@@ -29,7 +29,7 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
     private _list: AbstractVirtualizedList<DataType>;
     private _itemDataManager: ItemDataManager<DataType>;
 
-    private _scrollableResizeTracker: ResizeTracker;
+    private _containersResizeTracker: ResizeTracker;
     private _itemsResizeTracker: ResizeTracker;
 
     private _renderRange: RenderRange = [0, 0];
@@ -73,9 +73,10 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
         this._list = list;
         this._itemDataManager = itemDataManager;
 
-        // Init ScrollableResizeTracker.
-        this._scrollableResizeTracker = new ResizeTracker(this._handleScrollableResize);
-        this._scrollableResizeTracker.observe(this._list.scrollableContainer);
+        // Init ContainersResizeTracker.
+        this._containersResizeTracker = new ResizeTracker(this._handleContainersResize);
+        this._containersResizeTracker.observe(this._list.scrollableContainer);
+        this._containersResizeTracker.observe(this._list.listHeaderContainer);
 
         // Init ItemsResizeTracker.
         this._itemsResizeTracker = new ResizeTracker(this._handleItemsResize);
@@ -168,18 +169,42 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
     public dispose()
     {
         this.removeAllListeners();
-        this._scrollableResizeTracker.dispose();
+        this._containersResizeTracker.dispose();
         this._itemsResizeTracker.dispose();
         this._currentRenderedIndexRange = undefined;
     }
 
-    private _handleScrollableResize = (entries: ResizeTrackerEntry[]) =>
+    private _handleContainersResize = (entries: ResizeTrackerEntry[]) =>
     {
+        let listHeaderHeight: number | undefined;
+        let scrollableHeight: number | undefined;
+        entries.forEach(entry =>
+        {
+            const { target } = entry;
+            if (target === this._list.listHeaderContainer)
+            {
+                listHeaderHeight = entry.contentHeight;
+            }
+            else if (target === this._list.scrollableContainer)
+            {
+                scrollableHeight = entry.contentHeight;
+            }
+        });
+
+        if (scrollableHeight == null)
+        {
+            scrollableHeight = this._list.scrollableContainer.clientHeight;
+        }
+        if (listHeaderHeight == null)
+        {
+            listHeaderHeight = this._list.listHeaderContainer.offsetHeight;
+        }
+
         // Calculates the render range.
         const nextRenderRange = calculateRenderRange(
-            this._list.options.leadingBufferZone,
+            this._list.options.leadingBufferZone + listHeaderHeight,
             this._list.options.trailingBufferZone,
-            entries[0].contentHeight
+            scrollableHeight
         );
         if (!isRangeEqual(this._renderRange, nextRenderRange))
         {
