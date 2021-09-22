@@ -39,8 +39,8 @@ export function renderListHeader()
     const header = this.createElement("div");
     header.textContent = "List Header";
     header.style.textAlign = "center";
-    header.style.padding = `${Math.floor(Math.random() * 500)}px 0`;
-    // header.style.padding = `500px 0`;
+    header.style.padding = `${Math.floor(Math.random() * 100)}px 0`;
+    // header.style.padding = `50px 0`;
     header.style.backgroundColor = "#ddd";
     return header;
 }
@@ -50,8 +50,8 @@ export function renderListFooter()
     const footer = this.createElement("div");
     footer.textContent = "List Footer";
     footer.style.textAlign = "center";
-    footer.style.padding = `${Math.floor(Math.random() * 500)}px 0`;
-    // footer.style.padding = `500px 0`;
+    footer.style.padding = `${Math.floor(Math.random() * 100)}px 0`;
+    // footer.style.padding = `50px 0`;
     footer.style.backgroundColor = "#ddd";
     return footer;
 }
