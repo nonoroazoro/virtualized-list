@@ -1,6 +1,6 @@
 # virtualized-list (WIP)
 
-[English](README.md) | [中文](README.zh-CN.md)
+[**English**](README.md) | [中文](README.zh-CN.md)
 
 This is a virtualized list written in vanilla JavaScript.
 

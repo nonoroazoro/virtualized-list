@@ -1,6 +1,6 @@
 # virtualized-list
 
-[English](README.md) | [中文](README.zh-CN.md)
+[English](README.md) | [**中文**](README.zh-CN.md)
 
 这是一个使用原生 JavaScript 实现的虚拟列表。
 
