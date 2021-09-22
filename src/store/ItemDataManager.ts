@@ -138,19 +138,19 @@ export class ItemDataManager<DataType> implements IDisposable
      */
     public iterateByRange(renderRange: Range, fn: (value: ItemData<DataType>) => void)
     {
-        let itemTop = 0;
+        let offsetTop = this._list.listHeaderContainer.offsetHeight;
         const [top, bottom] = renderRange;
         for (let i = 0; i < this._dataSourceLength; i++)
         {
             const itemData = this.getItem(i);
-            const itemBottom = itemTop + itemData.height;
-            if (itemBottom > top && itemTop < bottom)
+            const itemBottom = offsetTop + itemData.height;
+            if (itemBottom > top && offsetTop < bottom)
             {
                 fn(itemData);
             }
 
-            itemTop = itemBottom;
-            if (itemTop >= bottom)
+            offsetTop = itemBottom;
+            if (offsetTop >= bottom)
             {
                 // Break if the next item's top is larger or equal than the bottom.
                 break;
