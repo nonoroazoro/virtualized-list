@@ -6,7 +6,7 @@ import type { HTMLComponentOptions } from "../HTMLComponentOptions";
 export interface VirtualizedListConfig extends HTMLComponentOptions
 {
     /**
-     * The default height (in `px`) assumption of an item.
+     * The default height (in `px`) assumption of the list item.
      *
      * Defaults to `50` px.
      */
