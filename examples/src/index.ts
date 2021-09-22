@@ -37,7 +37,7 @@ scrollToBottomBtn.addEventListener("click", () =>
 });
 scrollToIndexBtn.addEventListener("click", () =>
 {
-    const index = Math.min(Math.floor(Math.random() * 120000), 100000);
+    const index = Math.min(Math.floor(Math.random() * 520000), 500000);
     // const index = 50;
     scrollIndexSpan.textContent = String(index);
     list.scrollToIndex(index);
@@ -47,7 +47,7 @@ scrollToIndexBtn.addEventListener("click", () =>
 // we can't render millions of items correctly due to the max padding limitation of chrome/firefox,
 // which equals to 2**25 (33554432px).
 const data: Message[] = [];
-for (let i = 0; i < 100001; i++)
+for (let i = 0; i < 500001; i++)
 {
     data.push({
         id: `${i}`,
