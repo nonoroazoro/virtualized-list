@@ -162,7 +162,6 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
     {
         this._removeListItems([...this._list.itemsContainer.children]);
         this._currentRenderedIndexRange = undefined;
-        this._renderRange = [0, 0];
         this.paddingBottom = 0;
         this.paddingTop = 0;
         this._list.scrollableContainer.scrollTop = 0;
@@ -174,7 +173,6 @@ export class Reconciler<DataType> extends EventEmitter<ReconcilerEventTypes> imp
         this._containersResizeTracker.dispose();
         this._itemsResizeTracker.dispose();
         this._currentRenderedIndexRange = undefined;
-        this._renderRange = [0, 0];
     }
 
     private _handleContainersResize = (entries: ResizeTrackerEntry[]) =>
