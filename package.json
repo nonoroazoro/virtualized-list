@@ -21,6 +21,7 @@
         "email": "xiaochao.k@gmail.com"
     },
     "scripts": {
+        "prepare": "husky install",
         "prebuild": "npm run clean && npm run cleanCov",
         "clean": "rimraf dist/*",
         "cleanCov": "rimraf @coverage",
@@ -54,7 +55,7 @@
         "eslint-config-zoro": "^4.31.0",
         "file-loader": "^6.2.0",
         "fork-ts-checker-webpack-plugin": "^6.3.3",
-        "husky": "^4.3.8",
+        "husky": "^7.0.2",
         "identity-obj-proxy": "^3.0.0",
         "jest": "^27.2.1",
         "less": "^4.1.1",
