@@ -101,7 +101,7 @@ export class ItemDataManager<DataType> implements IDisposable
      *
      * @param {number} index The index of the {@link ItemData}.
      */
-    getItemOffset(index: number): [offsetTop: number, height: number]
+    public getItemOffset(index: number): [offsetTop: number, height: number]
     {
         if (index < 0 || index >= this._dataSourceLength)
         {
