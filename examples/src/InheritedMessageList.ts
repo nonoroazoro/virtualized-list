@@ -1,6 +1,6 @@
 import { AbstractVirtualizedList } from "../../src";
 import * as renderers from "./Renderers";
-import type { Message } from "./Message";
+import type { Message } from "./types/Message";
 import type { VirtualizedListOptions } from "../../src";
 
 export class InheritedMessageList extends AbstractVirtualizedList<Message>
@@ -13,27 +13,27 @@ export class InheritedMessageList extends AbstractVirtualizedList<Message>
 
     protected renderListItem(itemData: Message, key: string, index: number): HTMLElement
     {
-        return renderers.renderListItem.call(this, itemData, key, index);
+        return renderers.renderListItem(itemData, key, index);
     }
 
     protected override renderListHeader()
     {
-        return renderers.renderListHeader.call(this);
+        return renderers.renderListHeader();
     }
 
     protected override renderListFooter()
     {
-        return renderers.renderListFooter.call(this);
+        return renderers.renderListFooter();
     }
 
     protected override renderListEmpty()
     {
-        return renderers.renderListEmpty.call(this);
+        return renderers.renderListEmpty();
     }
 
     public generateItemKey(itemData: Message)
     {
-        return renderers.generateItemKey.call(this, itemData);
+        return renderers.generateItemKey(itemData);
     }
 }
 
