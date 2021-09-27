@@ -1,17 +1,13 @@
 {
-    "version": "0.2.0",
     "configurations": [
         {
-            "type": "chrome",
-            "request": "attach",
             "name": "Attach to Chrome",
             "port": 9222,
-            "urlFilter": "https://localhost:8080*",
-            "webRoot": "${workspaceRoot}",
-            "sourceMapPathOverrides": {
-                "webpack:///./*": "${webRoot}/*"
-            },
-            "smartStep": true
+            "request": "attach",
+            "type": "pwa-chrome",
+            "webRoot": "${workspaceFolder}",
+            "smartStep": true,
+            "urlFilter": "https://localhost:8080*"
         }
     ]
 }
