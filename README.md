@@ -21,3 +21,15 @@ This is a virtualized list written in vanilla JavaScript.
     1. Render `millions` of items in `milliseconds`.
 
     1. Run in `60 FPS` (nearly).
+
+## Examples
+
+```bash
+npm i
+npm start
+# open https://localhost:8080/
+```
+
+## Debug
+
+Open codebase with `VSCode`, press `F5` to debug.
