@@ -27,7 +27,7 @@ export function readItemIndex(element: HTMLElement): number
     const index = element[INDEX_PROPERTY];
     if (index == null)
     {
-        throw new Error(`The item meta property "VL_INDEX" is not found`);
+        throw new Error(`The item meta property "${INDEX_PROPERTY}" is not found`);
     }
     return Number(index);
 }
